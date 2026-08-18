@@ -11,15 +11,15 @@ type
     lxcpath*: cstring
     free*: proc(s: ptr lxc_snapshot) {.cdecl.}
 
-  bdev_specs_zfs* {.importc: "struct <anonymous>", header: "<lxc/lxccontainer.h>".} = object
+  bdev_specs_zfs* = object
     zfsroot*: cstring
 
-  bdev_specs_lvm* {.importc: "struct <anonymous>", header: "<lxc/lxccontainer.h>".} = object
+  bdev_specs_lvm* = object
     vg*: cstring
     lv*: cstring
     thinpool*: cstring
 
-  bdev_specs_rbd* {.importc: "struct <anonymous>", header: "<lxc/lxccontainer.h>".} = object
+  bdev_specs_rbd* = object
     rbdname*: cstring
     rbdpool*: cstring
     rbduser*: cstring

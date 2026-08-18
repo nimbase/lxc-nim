@@ -3,7 +3,6 @@
 #
 # (c) 2026 George Lemon | LGPL-2.1-only
 
-import std/posix
 import unittest
 import lxc
 import lxc/api

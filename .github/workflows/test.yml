@@ -1,0 +1,9 @@
+name: test
+on: [push, pull_request]
+jobs:
+  test:
+    uses: nimbase/setup-nim-action/.github/workflows/test.yml@main
+    with:
+      nim-version: stable
+      os: '[{"os":"ubuntu-latest"}]'
+      pre-install-command: sudo apt-get update && sudo apt-get install -y liblxc-dev

@@ -2,9 +2,7 @@
 #
 # LGPL-2.1-only
 
-when defined(windows):
-  {.passL: "-llxc".}
-else:
+when defined(linux):
   {.passL: gorge("pkg-config --libs liblxc").}
   {.passC: gorge("pkg-config --cflags liblxc").}
 

@@ -20,3 +20,5 @@ type
   lxc_confPtr* = ptr lxc_conf
 
 proc free*(p: pointer) {.importc: "free", header: "<stdlib.h>".}
+proc malloc*(size: csize_t): pointer {.importc: "malloc", header: "<stdlib.h>".}
+proc cstrlen*(s: cstring): csize_t {.importc: "strlen", header: "<string.h>".}

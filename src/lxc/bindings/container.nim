@@ -106,8 +106,20 @@ type
     # pidfd / devpts
     init_pidfd*: proc(c: ptr lxc_container): cint {.cdecl.}
     devpts_fd*: proc(c: ptr lxc_container): cint {.cdecl.}
-    # receive timeout
+    # receive timeout (LXC >= 6.0)
     rcv_timeout*: cint
     set_timeout*: proc(c: ptr lxc_container, timeout: cint): bool {.cdecl.}
 
   lxc_containerPtr* = ptr lxc_container
+
+const
+  LXC_CLONE_KEEPNAME* = (1 shl 0)
+  LXC_CLONE_KEEPMACADDR* = (1 shl 1)
+  LXC_CLONE_SNAPSHOT* = (1 shl 2)
+  LXC_CLONE_KEEPBDEVTYPE* = (1 shl 3)
+  LXC_CLONE_MAYBE_SNAPSHOT* = (1 shl 4)
+  LXC_CLONE_MAXFLAGS* = (1 shl 5)
+  LXC_CLONE_ALLOW_RUNNING* = (1 shl 6)
+
+  LXC_CREATE_QUIET* = (1 shl 0)
+  LXC_CREATE_MAXFLAGS* = (1 shl 1)

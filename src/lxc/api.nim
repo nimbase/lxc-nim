@@ -7,6 +7,13 @@ import std/posix
 import ./bindings/common
 import ./bindings/[container, attach, snapshot, free_api]
 
+proc nim_strdup(s: cstring): cstring =
+  if s == nil: return nil
+  let len = cstrlen(s)
+  result = cast[cstring](malloc(len + 1))
+  copyMem(result, s, len)
+  result[len] = '\0'
+
 type
   LxcError* = object of CatchableError
     errorNum*: cint
@@ -354,7 +361,15 @@ proc snapshotList*(self: Container): seq[lxc_snapshot] =
   result = @[]
   let arr = cast[ptr UncheckedArray[lxc_snapshot]](snaps)
   for i in 0 ..< n:
-    result.add arr[i]
+    var s: lxc_snapshot
+    if arr[i].name != nil: s.name = nim_strdup(arr[i].name)
+    if arr[i].comment_pathname != nil: s.comment_pathname = nim_strdup(arr[i].comment_pathname)
+    if arr[i].timestamp != nil: s.timestamp = nim_strdup(arr[i].timestamp)
+    if arr[i].lxcpath != nil: s.lxcpath = nim_strdup(arr[i].lxcpath)
+    result.add s
+  for i in 0 ..< n:
+    if arr[i].free != nil:
+      arr[i].free(addr arr[i])
   free(snaps)
 
 proc snapshotRestore*(self: Container, snapname: string, newName: string = ""): bool =
@@ -484,6 +499,7 @@ proc listDefinedContainers*(lxcpath: string = ""): seq[Container] =
   let arr = cast[ptr UncheckedArray[lxc_containerPtr]](containers)
   for i in 0 ..< n:
     result.add Container(Handle: arr[i])
+  free(names)
   free(containers)
 
 proc listActiveContainers*(lxcpath: string = ""): seq[Container] =
@@ -497,6 +513,7 @@ proc listActiveContainers*(lxcpath: string = ""): seq[Container] =
   let arr = cast[ptr UncheckedArray[lxc_containerPtr]](containers)
   for i in 0 ..< n:
     result.add Container(Handle: arr[i])
+  free(names)
   free(containers)
 
 proc listAllContainers*(lxcpath: string = ""): seq[Container] =
@@ -510,4 +527,64 @@ proc listAllContainers*(lxcpath: string = ""): seq[Container] =
   let arr = cast[ptr UncheckedArray[lxc_containerPtr]](containers)
   for i in 0 ..< n:
     result.add Container(Handle: arr[i])
+  free(names)
   free(containers)
+
+# ------------------------------------------------------------------
+# Migrate
+# ------------------------------------------------------------------
+
+proc migrate*(self: Container, cmd: cuint, opts: ptr migrate_opts,
+    size: cuint): cint =
+  ## Perform a migration operation on the container.
+  ## ``cmd`` is one of MIGRATE_PRE_DUMP, MIGRATE_DUMP, MIGRATE_RESTORE,
+  ## or MIGRATE_FEATURE_CHECK.
+  self.Handle.migrate(self.Handle, cmd, opts, size)
+
+# ------------------------------------------------------------------
+# Console Log
+# ------------------------------------------------------------------
+
+proc consoleLog*(self: Container, log: ptr lxc_console_log): cint =
+  ## Query the console log of a container.
+  self.Handle.console_log(self.Handle, log)
+
+# ------------------------------------------------------------------
+# Utility free functions
+# ------------------------------------------------------------------
+
+proc lxcGetWaitStates*(): seq[string] =
+  ## Obtain a list of all container states.
+  ## Returns up to MAX_STATE (8) entries.
+  var buf: array[8, cstring]
+  let n = lxc_get_wait_states(cast[ptr cstringArray](addr buf[0]))
+  result = @[]
+  if n > 0:
+    for i in 0 ..< min(n, 8):
+      if buf[i] != nil:
+        result.add $buf[i]
+
+proc lxcConfigItemIsSupported*(key: string): bool =
+  ## Check if a configuration item is supported by this LXC instance.
+  lxc_config_item_is_supported(key.cstring)
+
+proc lxcHasApiExtension*(extension: string): bool =
+  ## Check if an API extension is supported by this LXC instance.
+  lxc_has_api_extension(extension.cstring)
+
+proc lxcLogInit*(name: string = "", lxcpath: string = "",
+    file: string = "", level: string = "", prefix: string = "",
+    quiet: bool = false): cint =
+  ## Initialize the LXC log.
+  var log: lxc_log
+  if name.len > 0: log.name = name.cstring
+  if lxcpath.len > 0: log.lxcpath = lxcpath.cstring
+  if file.len > 0: log.file = file.cstring
+  if level.len > 0: log.level = level.cstring
+  if prefix.len > 0: log.prefix = prefix.cstring
+  log.quiet = quiet
+  lxc_log_init(addr log)
+
+proc lxcLogClose*() =
+  ## Close the LXC log file.
+  lxc_log_close()

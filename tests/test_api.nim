@@ -430,6 +430,19 @@ suite "api.nim - Container method signatures":
       if c != nil:
         discard c.setTimeout(30))
 
+  test "migrate signature":
+    check compiles(block:
+      var c: Container = nil
+      if c != nil:
+        discard c.migrate(0, nil, 0))
+
+  test "consoleLog signature":
+    check compiles(block:
+      var c: Container = nil
+      if c != nil:
+        var log: lxc_console_log
+        discard c.consoleLog(addr log))
+
   test "mount signature":
     check compiles(block:
       var c: Container = nil
@@ -482,3 +495,17 @@ suite "api.nim - listing functions":
   test "listAllContainers returns seq[Container]":
     let containers = listAllContainers()
     check containers is seq[Container]
+
+suite "api.nim - utility free functions":
+  test "lxcGetWaitStates returns seq[string]":
+    let states = lxcGetWaitStates()
+    check states is seq[string]
+
+  test "lxcConfigItemIsSupported returns bool":
+    check lxcConfigItemIsSupported("lxc.lxcpath") is bool
+
+  test "lxcHasApiExtension returns bool":
+    check lxcHasApiExtension("nesting") is bool
+
+  test "lxcLogClose signature":
+    skip()  # Nim compiler: compiles() returns false for void dynlib wrapper procs

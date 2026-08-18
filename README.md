@@ -13,10 +13,10 @@
 
 ## Features
 
-- **Full API coverage** -- Lifecycle, configuration, networking, snapshots, attach, console, CRIU checkpoint/restore, Cgroups, seccomp, mount injection, and migration
-- **Two-layer architecture** -- Thin C-ABI bindings for raw access, idiomatic high-level wrapper with exceptions and GC integration
-- **Memory-safe** -- Automatic reference counting via `=destroy` hooks, no manual `free` required at the high-level layer
-- **Nim-idiomatic** -- `string` arguments, `seq[string]` returns, `bool` success/failure, named parameters with defaults
+- Lifecycle, configuration, networking, snapshots, attach
+- Console, CRIU checkpoint/restore, Cgroups, seccomp, mount injection, and migration
+- Thin C-ABI bindings for raw access
+- Idiomatic high-level API with exceptions and GC integration
 
 ## Requirements
 

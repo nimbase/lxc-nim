@@ -189,7 +189,8 @@ suite "snapshot.nim - bdev_specs struct":
     specs.dir = "/var/lib/lxc"
     specs.rbd.rbdname = nil
     specs.rbd.rbdpool = nil
-    specs.rbd.rbduser = nil
+    when lxcVersionMajor >= 7:
+      specs.rbd.rbduser = nil
     check specs.fstype == "ext4"
     check specs.fssize == 1073741824
     check specs.dir == "/var/lib/lxc"

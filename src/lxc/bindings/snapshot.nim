@@ -3,6 +3,21 @@
 #
 # (c) 2026 George Lemon | LGPL-2.1-only
 
+import std/strutils
+
+const lxcVersionMajor* =
+  block:
+    var version = 0
+    for path in ["/usr/local/include/lxc/version.h",
+                 "/usr/include/lxc/version.h"]:
+      let output = staticExec(
+        "cat " & path & " 2>/dev/null | grep LXC_VERSION_MAJOR | head -1 | awk '{print $3}'")
+      let s = output.strip()
+      if s.len > 0:
+        version = parseInt(s)
+        break
+    version
+
 type
   lxc_snapshot* {.importc: "struct lxc_snapshot", header: "<lxc/lxccontainer.h>".} = object
     name*: cstring
@@ -19,11 +34,17 @@ type
     lv*: cstring
     thinpool*: cstring
 
-  bdev_specs_rbd* = object
+when lxcVersionMajor >= 7:
+  type bdev_specs_rbd* = object
     rbdname*: cstring
     rbdpool*: cstring
     rbduser*: cstring
+else:
+  type bdev_specs_rbd* = object
+    rbdname*: cstring
+    rbdpool*: cstring
 
+type
   bdev_specs* {.importc: "struct bdev_specs", header: "<lxc/lxccontainer.h>".} = object
     fstype*: cstring
     fssize*: uint64

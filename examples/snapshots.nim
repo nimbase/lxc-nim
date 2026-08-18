@@ -19,16 +19,24 @@ proc main() =
   echo "Creating container..."
   let ok = c.create(
     t = "download",
-    argv = @["--dist", "alpine", "--release", "3.20", "--arch", "amd64"]
+    argv = @["--dist", "alpine", "--release", "3.24", "--arch", "amd64"]
   )
   if not ok:
     echo "Failed to create container"
     quit(1)
 
-  echo "Starting container for snapshot..."
+  # Disable networking (no lxcbr0 bridge on this host)
+  discard c.setConfigItem("lxc.net.0.type", "empty")
+  discard c.saveConfig()
+
+  echo "Starting container briefly..."
   discard c.start()
   discard c.wait("RUNNING", 30)
   sleep(1000)  # let it initialize
+
+  echo "Stopping container for snapshot..."
+  discard c.stop()
+  discard c.wait("STOPPED", 30)
 
   echo ""
   echo "=== Creating snapshot 'snap0' ==="
@@ -42,11 +50,6 @@ proc main() =
     echo "  - name: ", $s.name
     echo "    timestamp: ", $s.timestamp
     echo "    comment: ", $s.comment_pathname
-
-  echo ""
-  echo "=== Stopping container ==="
-  discard c.stop()
-  discard c.wait("STOPPED", 30)
 
   echo ""
   echo "=== Restoring snapshot 'snap0' as 'restored-ct' ==="

@@ -22,10 +22,10 @@ proc main() =
     discard c.destroy()
 
   # Create a container using the download template
-  echo "Creating container '", ContainerName, "' with Alpine 3.20..."
+  echo "Creating container '", ContainerName, "' with Alpine 3.24..."
   let ok = c.create(
     t = "download",
-    argv = @["--dist", "alpine", "--release", "3.20", "--arch", "amd64"]
+    argv = @["--dist", "alpine", "--release", "3.24", "--arch", "amd64"]
   )
   if not ok:
     echo "Failed to create container"
@@ -36,6 +36,11 @@ proc main() =
   echo "Setting hostname..."
   discard c.setConfigItem("lxc.uts.name", "my-alpine")
   echo "Hostname: ", c.getConfigItem("lxc.uts.name")
+
+  # Disable networking (no lxcbr0 bridge on this host)
+  echo "Disabling network..."
+  discard c.setConfigItem("lxc.net.0.type", "empty")
+  discard c.saveConfig()
 
   # Start the container
   echo "Starting container..."

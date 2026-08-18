@@ -20,7 +20,7 @@ proc main() =
   echo "Creating container..."
   let ok = c.create(
     t = "download",
-    argv = @["--dist", "alpine", "--release", "3.20", "--arch", "amd64"]
+    argv = @["--dist", "alpine", "--release", "3.24", "--arch", "amd64"]
   )
   if not ok:
     echo "Failed to create container"

@@ -19,9 +19,11 @@ proc ensureCreated(): Container =
   if not result.isDefined():
     let created = result.create(
       t = "download",
-      argv = @["--dist", "alpine", "--release", "3.20", "--arch", "amd64"]
+      argv = @["--dist", "alpine", "--release", "3.24", "--arch", "amd64"]
     )
     check created
+    discard result.setConfigItem("lxc.net.0.type", "empty")
+    discard result.saveConfig()
 
 suite "integration - container lifecycle":
   test "create container with download template":
